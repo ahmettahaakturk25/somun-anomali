@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom Apple-style animations and effects */
 @layer components {
   .glass-effect {
     @apply bg-white/80 backdrop-blur-lg border border-white/20;
@@ -23,7 +22,6 @@
   }
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -42,7 +40,6 @@
   background: #94a3b8;
 }
 
-/* Smooth animations */
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

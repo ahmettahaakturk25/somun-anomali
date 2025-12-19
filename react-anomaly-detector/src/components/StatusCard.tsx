@@ -73,7 +73,6 @@ const StatusCard: React.FC<StatusCardProps> = ({ results, language }) => {
         </div>
       </div>
 
-      {/* Progress bar for score vs threshold */}
       <div className="mt-4">
         <div className="flex justify-between text-xs mb-1">
           <span>{t.scoreVsThreshold}</span>

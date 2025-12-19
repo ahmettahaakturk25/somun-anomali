@@ -58,7 +58,6 @@ function App() {
     setIsAnalyzing(true);
     setProgress(0);
 
-    // Progress simulation
     const progressInterval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 90) {
@@ -70,7 +69,6 @@ function App() {
     }, 300);
 
     try {
-      // Real API call to Python backend
       const formData = new FormData();
       formData.append('file', selectedFile);
 
@@ -119,7 +117,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
       <header className="bg-white/80 backdrop-blur-lg border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -134,7 +131,6 @@ function App() {
             </div>
             
             <div className="flex items-center space-x-4">
-              {/* Language Toggle */}
               <button
                 onClick={() => setLanguage(language === 'en' ? 'tr' : 'en')}
                 className="flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg text-white text-sm font-medium transition-all shadow-md hover:shadow-lg"
@@ -156,10 +152,7 @@ function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Left Panel - Upload & Controls */}
           <div className="lg:col-span-1 space-y-6">
-            
-            {/* Upload Zone */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -198,7 +191,6 @@ function App() {
                 )}
               </div>
 
-              {/* Preview */}
               {previewUrl && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -222,7 +214,6 @@ function App() {
               )}
             </motion.div>
 
-            {/* Analyze Button */}
             {selectedFile && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -254,7 +245,6 @@ function App() {
                   )}
                 </button>
 
-                {/* Progress Bar */}
                 {isAnalyzing && (
                   <motion.div
                     initial={{ opacity: 0 }}
@@ -278,12 +268,10 @@ function App() {
               </motion.div>
             )}
 
-            {/* Status Card */}
             {results && <StatusCard results={results} language={language} />}
           </div>
 
-          {/* Right Panel - Results */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
             <AnimatePresence mode="wait">
               {results ? (
                 <ResultsPanel key="results" results={results} language={language} />

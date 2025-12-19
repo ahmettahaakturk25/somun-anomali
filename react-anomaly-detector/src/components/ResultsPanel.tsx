@@ -85,7 +85,6 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, language }) => {
       animate={{ opacity: 1, y: 0 }}
       className="bg-white rounded-2xl shadow-lg overflow-hidden"
     >
-      {/* Header */}
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -120,10 +119,8 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, language }) => {
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-6">
         {selectedView === 'grid' ? (
-          /* Grid View */
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {visualizations.map((viz, index) => (
               <motion.div
@@ -156,7 +153,6 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, language }) => {
             ))}
           </div>
         ) : (
-          /* Focus View */
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -178,7 +174,6 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, language }) => {
           </motion.div>
         )}
 
-        {/* Metrics Panel */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-"""
-PatchCore FastAPI Backend - Real Model Inference
-"""
 
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,10 +17,8 @@ import time
 from pathlib import Path
 from sklearn.neighbors import NearestNeighbors
 
-# Initialize FastAPI
 app = FastAPI(title="PatchCore Anomaly Detection API", version="1.0.0")
 
-# Enable CORS for React frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -32,11 +27,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global variables
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"🚀 Using device: {device}")
 
-# Model components
 backbone = None
 feature_extractor = {}
 memory_bank = None
@@ -45,7 +38,6 @@ threshold = 0.3269
 layers = ['layer2', 'layer3']
 
 def create_feature_hooks():
-    """Create feature extraction hooks for ResNet"""
     global feature_extractor
     
     def hook_fn(name):
@@ -59,12 +51,10 @@ def create_feature_hooks():
             print(f"✅ Hook registered: {name}")
 
 def extract_features(x):
-    """Extract features from input tensor"""
     global feature_extractor
     feature_extractor.clear()
     
     with torch.no_grad():
-        # Forward pass through ResNet
         x = backbone.conv1(x)
         x = backbone.bn1(x)
         x = backbone.relu(x)
@@ -75,7 +65,6 @@ def extract_features(x):
         x = backbone.layer3(x)
         x = backbone.layer4(x)
     
-    # Collect features
     features = []
     for layer in layers:
         if layer in feature_extractor:
@@ -90,11 +79,9 @@ def extract_features(x):
 
 @app.on_event("startup")
 async def load_model():
-    """Load PatchCore model on startup"""
     global backbone, memory_bank, nn_model, threshold
     
     try:
-        # Load ResNet50 backbone
         print("🔧 Loading ResNet50 backbone...")
         backbone = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
         backbone.eval()
@@ -102,7 +89,6 @@ async def load_model():
         create_feature_hooks()
         print("✅ Backbone loaded")
         
-        # Load trained memory bank
         model_path = Path(__file__).parent.parent / "model" / "patchcore_metal_nut.pkl"
         if model_path.exists():
             print(f"📂 Loading memory bank from: {model_path}")
@@ -114,14 +100,12 @@ async def load_model():
                     memory_bank = saved_data['memory_bank']
                     print(f"✅ Memory bank loaded: {memory_bank.shape}")
                     
-                    # Build NN model
                     nn_model = NearestNeighbors(n_neighbors=1, metric='cosine')
                     nn_model.fit(memory_bank)
                     print("✅ NN model built")
                 
                 if 'config' in saved_data:
                     config = saved_data['config']
-                    # Threshold'u config'den al veya hesapla
                     print(f"📊 Config: {config}")
             
             print("🎉 Model loaded successfully!")
@@ -134,7 +118,6 @@ async def load_model():
         traceback.print_exc()
 
 def preprocess_image(image_bytes):
-    """Preprocess uploaded image"""
     image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
     original_array = np.array(image)
     
@@ -148,29 +131,23 @@ def preprocess_image(image_bytes):
     return original_array, input_tensor
 
 def analyze_image_real(input_tensor):
-    """Real PatchCore analysis"""
     global nn_model, threshold
     
-    # Extract features
     features = extract_features(input_tensor)
     b, c, h, w = features.shape
     
-    # Reshape for patch analysis
     features = features.reshape(b, c, h*w).permute(0, 2, 1)
     patch_features = features[0].cpu().numpy()
     
-    # Get distances from memory bank
     if nn_model is not None:
         distances, _ = nn_model.kneighbors(patch_features)
         distances = distances.flatten()
     else:
         raise RuntimeError("NN model not loaded!")
     
-    # Create anomaly map
     anomaly_map = distances.reshape(h, w)
     anomaly_map_resized = cv2.resize(anomaly_map, (256, 256))
     
-    # Calculate score
     anomaly_score = float(np.max(distances))
     is_anomaly = anomaly_score > threshold
     confidence = abs(anomaly_score - threshold) / threshold if threshold > 0 else 0.5
@@ -184,7 +161,6 @@ def analyze_image_real(input_tensor):
     }
 
 def array_to_base64(array):
-    """Convert numpy array to base64"""
     if array.max() <= 1.0:
         array = (array * 255).astype(np.uint8)
     else:
@@ -210,7 +186,6 @@ async def root():
 
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
-    """Analyze image for anomalies"""
     start_time = time.time()
     
     try:
@@ -220,14 +195,11 @@ async def analyze(file: UploadFile = File(...)):
         image_bytes = await file.read()
         original_array, input_tensor = preprocess_image(image_bytes)
         
-        # Real analysis
         result = analyze_image_real(input_tensor)
         
-        # Create visualizations
         original_b64 = array_to_base64(cv2.resize(original_array, (256, 256)))
         heatmap_b64 = array_to_base64(result['anomaly_map'])
         
-        # Overlay
         heatmap_color = cv2.applyColorMap(
             (result['anomaly_map'] * 255 / result['anomaly_map'].max()).astype(np.uint8),
             cv2.COLORMAP_JET
@@ -238,7 +210,6 @@ async def analyze(file: UploadFile = File(...)):
         )
         overlay_b64 = array_to_base64(overlay)
         
-        # Contours
         thresh_val = np.percentile(result['anomaly_map'], 85)
         binary = (result['anomaly_map'] > thresh_val).astype(np.uint8) * 255
         contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
